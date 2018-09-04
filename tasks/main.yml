@@ -45,6 +45,15 @@
 
   register: linux_image_extra_install
   ignore_errors: yes
+  
+# https://superuser.com/questions/1130898/no-internet-connection-inside-docker-containers/1335054#1335054
+- name: link /etc/resolv.conf for Ubuntu 18
+       file:
+         src: "/run/systemd/resolve/resolv.conf"
+         dest: "/etc/resolv.conf"
+         state: link
+       when: (ansible_distribution == 'Ubuntu' and ansible_distribution_version is version_compare ('18.04', '>='))
+       tags: always
 
 - name: Try again to install linux-image-extra if previous attempt failed
   apt:
@@ -118,6 +127,8 @@
   set_fact:
     docker_no_proxy_defined: "{{ docker_no_proxy is defined and docker_no_proxy is not none and docker_no_proxy != '' }}"
   tags: proxy
+  
+# https://superuser.com/questions/1130898/no-internet-connection-inside-docker-containers/1335054#1335054
 
 # https://github.com/moby/moby/issues/25471#issuecomment-263101090
 - name: Creates override directory (systemd)
